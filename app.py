@@ -33,7 +33,10 @@ def get_summary(text, num_sentences=6):
     scored.sort(reverse=True)
     top = sorted(scored[:num_sentences], key=lambda x: sentences.index(x[1]))
     summary = " ".join([s for _, s in top])
-    return summary[:1200]
+    summary = summary[:1200]
+    if '.' in summary:
+        summary = summary[:summary.rfind('.')+1]
+    return summary
 
 if uploaded_file is not None:
     reader = PdfReader(uploaded_file)
@@ -46,6 +49,10 @@ if uploaded_file is not None:
     with st.spinner("Summary bana raha hu..."):
         summary = get_summary(full_text, 6)
     st.subheader("📌 Summary")
-    st.write(summary)
+    points = re.split(r'(?<=[.!?])\s+', summary)
+    for p in points:
+        p = p.strip()
+        if p and len(p) > 40 and not re.match(r'^[\d\.\s]+[A-Z]', p):
+            st.write("• " + p)
     with st.expander("Preview Full Text"):
         st.write(full_text[:5000])
